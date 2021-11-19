@@ -1,11 +1,15 @@
 import torch
 import torch.nn as nn
+#
 from torch.nn import Linear, ReLU, CrossEntropyLoss, Sequential, Conv2d, MaxPool2d, Module, Softmax, BatchNorm2d, Dropout
+#
+
 import torchvision
 import torchvision.transforms as transforms
 import numpy as np
 
 import matplotlib.pyplot as plt
+
 
 def weights_init(m):
     if type(m) == nn.Linear:
@@ -15,6 +19,7 @@ def weights_init(m):
 def update_lr(optimizer, lr):
     for param_group in optimizer.param_groups:
         param_group['lr'] = lr
+
 
 
 #--------------------------------
@@ -39,7 +44,7 @@ num_validation =1000
 norm_layer = None #norm_layer = 'BN'
 print(hidden_size)
 
-dropout_p = 0 #probability of dropout
+
 
 #-------------------------------------------------
 # Load the CIFAR-10 dataset
@@ -50,14 +55,23 @@ dropout_p = 0 #probability of dropout
 #################################################################################
 data_aug_transforms = []
 # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
-#geometric transformations like:
-#translation, rotation, scaling,clipping, random cropping 
-# color transformations like greyscaling,color-jittering
 
+#geometric transformations like: translation, rotation, scaling,clipping, random cropping 
+#color transformations like greyscaling,color-jittering
 
+data_aug_transforms=[
+    #transforms.RandomAffine(degrees=0 ,translate=(0.1,0.5)),
+    #transforms.RandomRotation(degrees=(-45,45)),
+    #transforms.RandomAffine(degrees=0,scale=(0.5, 0.75)),
+    #transforms.RandomHorizontalFlip(p=0.5),
+    #transforms.RandomCrop(size=(32,32))
 
+    #transforms.RandomGrayscale(p=0.05)
+    #transforms.ColorJitter(brightness=0, contrast=0, saturation=0, hue=0.5)
+    ]
 
-
+# dropout values
+#dropout=0.1
 
 
 
@@ -102,6 +116,7 @@ test_loader = torch.utils.data.DataLoader(dataset=test_dataset,
                                           batch_size=batch_size,
                                           shuffle=False)
 
+
 #-------------------------------------------------
 # Convolutional neural network (Q1.a and Q2.a)
 # Set norm_layer for different networks whether using batch normalization
@@ -116,107 +131,137 @@ class ConvNet(nn.Module):
         # For Q2.a make use of BatchNorm2d layer from the torch.nn module.              #
         # For Q3.b Use Dropout layer from the torch.nn module.                          #
         #################################################################################
-      #  layers = []
+        layers = []
         # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
-
-
+        
         # First ConvBlock with input size 3 and first hidden layerc 128
+        ## i changed the order according to the prof , for Q1 BatchNorm2d is not required
 
         self.cnn_layers = nn.Sequential(
             nn.Conv2d(input_size, hidden_layers[0], kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(hidden_layers[0], eps=1e-05, momentum=0.1,affine=True, track_running_stats=True),
+            #nn.BatchNorm2d(hidden_layers[0], eps=1e-05, momentum=0.1,affine=True, track_running_stats=True),
+            nn.MaxPool2d(kernel_size=2, stride=2), 
             nn.ReLU(),
-            nn.MaxPool2d(kernel_size=2, stride=2),        
+            #nn.Dropout(dropout),
+                   
        # Adding the second  block
             nn.Conv2d(hidden_layers[0], hidden_layers[1], kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(hidden_layers[1], eps=1e-05, momentum=0.1,affine=True, track_running_stats=True),
-            nn.ReLU(),
+           #nn.BatchNorm2d(hidden_layers[1], eps=1e-05, momentum=0.1,affine=True, track_running_stats=True),
             nn.MaxPool2d(kernel_size=2, stride=2),
+            nn.ReLU(),
+            #nn.Dropout(dropout),
+           
       # Adding the third  block
             nn.Conv2d(hidden_layers[1], hidden_layers[2], kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(hidden_layers[2], eps=1e-05, momentum=0.1,affine=True, track_running_stats=True),
-            nn.ReLU(),
+           # nn.BatchNorm2d(hidden_layers[2], eps=1e-05, momentum=0.1,affine=True, track_running_stats=True),
             nn.MaxPool2d(kernel_size=2, stride=2),
+            nn.ReLU(),
+            #nn.Dropout(dropout),
+            
       # Adding the fourth  block
             nn.Conv2d(hidden_layers[2], hidden_layers[3], kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(hidden_layers[3], eps=1e-05, momentum=0.1,affine=True, track_running_stats=True),
-            nn.ReLU(),
+            #nn.BatchNorm2d(hidden_layers[3], eps=1e-05, momentum=0.1,affine=True, track_running_stats=True),
             nn.MaxPool2d(kernel_size=2, stride=2),
+            nn.ReLU(),
+            #nn.Dropout(dropout),
+            
       # Adding the fifth  block
             nn.Conv2d(hidden_layers[3], hidden_layers[4], kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(hidden_layers[4], eps=1e-05, momentum=0.1,affine=True, track_running_stats=True),
+            #nn.BatchNorm2d(hidden_layers[4], eps=1e-05, momentum=0.1,affine=True, track_running_stats=True),
+            nn.MaxPool2d(kernel_size=2, stride=2),
             nn.ReLU(),
-            nn.MaxPool2d(kernel_size=2, stride=2))
+            #nn.Dropout(dropout)
+            )
 
       # Fully connected layer
-        self.linear_layer = Sequential(Linear(hidden_layers[4], num_classes))   
+        self.linear_layer = Sequential(Linear(hidden_layers[4], num_classes)) 
+        
 
-      # Defining the forward pass    
+
+
+        # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
+
     def forward(self, x):
-            out = self.cnn_layers(x)
-            out = out.view(x.size(0), -1)          
-            out = self.linear_layer(out)
+        
+        #################################################################################
+        # TODO: Implement the forward pass computations                                 #
+        #################################################################################
+        # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
+        out = self.cnn_layers(x)
+        out = out.view(x.size(0), -1)
+        out = self.linear_layer(out)
+        
 
-            return out
+
+        # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
+        return out
+
+
 
 #-------------------------------------------------
 # Calculate the model size (Q1.b)
 # if disp is true, print the model parameters, otherwise, only return the number of parameters.
 #-------------------------------------------------
-
+def PrintModelSize(model, disp=True):
+    
     #################################################################################
     # TODO: Implement the function to count the number of trainable parameters in   #
     # the input model. This useful to track the capacity of the model you are       #
     # training                                                                      #
     #################################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
-
-def PrintModelSize(model, disp=True):
     model_size = 0
     for parameter in model.parameters():
-      model_size += parameter.nelement()
+        model_size += parameter.nelement()
     if disp == True:
-      print("\nTotal number of parameters: ", model_size)
-      print("\n")
+        print("\nTotal number of parameters: ", model_size)
+        print("\n")
 
     return model_size
-  
+
+
+
 
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
-  
+    return model_size
+
+
+
 
 #-------------------------------------------------
 # Calculate the model size (Q1.c)
 # visualize the convolution filters of the first convolution layer of the input model
 #-------------------------------------------------
-
+def VisualizeFilter(model):
+    
     #################################################################################
     # TODO: Implement the functiont to visualize the weights in the first conv layer#
     # in the model. Visualize them as a single image of stacked filters.            #
     # You can use matlplotlib.imshow to visualize an image in python                #
     #################################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
+    filter_map = np.zeros((31, 63, 3)) 
+    filters = list(model.parameters())[0] 
+    print(list(model.parameters())[0]) 
+    filters = filters.to("cpu")
+    filters = filters.data.numpy()
+    pos = 0
+    for x in range(0, 32,4):
+        for y in range(0, 64, 4):
+            filter_map[x:x+3, y:y+3, :] = filters[pos]
+            pos = pos + 1
+    plt.figure(figsize=(30, 15))
+    plt.imshow(filter_map)
+    plt.axis('off')
+    plt.show()
+    plt.imshow(filter_map)
+    plt.axis('off')
+    plt.show()
 
-def VisualizeFilter(model):
+    #pass
 
-     filter_map = np.zeros((31, 63, 3))
-     filters = list(model.parameters())[0]
-     print(list(model.parameters())[0]) 
-     filters = filters.to("cpu")  
-     filters = filters.data.numpy()
-
-     pos = 0
-     for x in range(0, 32,4):
-       for y in range(0, 64, 4):
-         filter_map[x:x+3, y:y+3, :] = filters[pos]
-         pos = pos + 1
-     plt.figure(figsize=(30, 15))
-     plt.imshow(filter_map)
-     plt.axis('off')
-     plt.show()
-
-     pass
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
+
 
 
 #======================================================================================
@@ -231,12 +276,6 @@ model = ConvNet(input_size, hidden_size, num_classes, norm_layer=norm_layer).to(
 model.apply(weights_init)
 # Print the model
 print(model)
-
-#for i, (images, labels) in enumerate(train_loader):
-# images = images.to(device)
-
-# break
-
 # Print model size
 #======================================================================================
 # Q1.b: Implementing the function to count the number of trainable parameters in the model
@@ -246,7 +285,9 @@ PrintModelSize(model)
 # Q1.a: Implementing the function to visualize the filters in the first conv layers.
 # Visualize the filters before training
 #======================================================================================
-#VisualizeFilter(model)
+VisualizeFilter(model)
+
+
 
 # Loss and optimizer
 criterion = nn.CrossEntropyLoss()
@@ -335,6 +376,7 @@ for epoch in range(num_epochs):
 model.eval()
 
 
+
 plt.figure(2)
 plt.plot(loss_train, 'r', label='Train loss')
 plt.plot(loss_val, 'g', label='Val loss')
@@ -348,7 +390,6 @@ plt.show()
 
 
 
-
 #################################################################################
 # TODO: Q2.b Implement the early stopping mechanism to load the weights from the#
 # best model so far and perform testing with this model.                        #
@@ -356,7 +397,9 @@ plt.show()
 # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
 
+
 # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
+
 #Compute accuracy on the test set
 with torch.no_grad():
     correct = 0
@@ -380,9 +423,8 @@ with torch.no_grad():
 VisualizeFilter(model)
 
 
+
 # Save the model checkpoint
 #torch.save(model.state_dict(), 'model.ckpt')
-
-
 
 

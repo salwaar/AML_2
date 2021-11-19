@@ -37,14 +37,19 @@ num_validation =1000
 fine_tune = True
 pretrained=True
 
+
+
 #-------------------------------------------------
 # Load the CIFAR-10 dataset
 #-------------------------------------------------
+
 data_aug_transforms = [transforms.RandomHorizontalFlip(p=0.5)]#, transforms.RandomGrayscale(p=0.05)]
+
 ###############################################################################
 # TODO: Add to data_aug_transforms the best performing data augmentation      #
 # strategy and hyper-parameters as found out in Q3.a                          #
 ###############################################################################
+
 
 norm_transform = transforms.Compose(data_aug_transforms+[transforms.ToTensor(),
                                      transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
@@ -86,6 +91,8 @@ def set_parameter_requires_grad(model, feature_extracting):
     if feature_extracting:
         for param in model.parameters():
             param.requires_grad = False
+            
+            
 
 class VggModel(nn.Module):
     def __init__(self, n_class, fine_tune, pretrained=True):
@@ -99,12 +106,25 @@ class VggModel(nn.Module):
         #################################################################################
         # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
         
+       # https://pytorch.org/vision/main/_modules/torchvision/models/vgg.html#vgg11_bn
+       #Add two fully connected layers on top, with BatchNorm and ReLU layers between them
+       #initial try for Q4 , not sure yet how to do it 
         
+        #self.Vgg=models.vgg11_bn(pretrained=pretrained)
+        #del self.Vgg.avgpool
+        #del slef.Vgg.classifier
         
-        
-        
+        #self.Vgg=nn.Sequential(
+        #    nn.linear(),
+        #    nn.ReLU(),
+        #    nn.BatchNorm2d(),
+        #    nn.linear(  , num_classesum)
+         #   )
 
         
+
+
+
 
         # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
@@ -113,6 +133,14 @@ class VggModel(nn.Module):
         # TODO: Implement the forward pass computations                                 #
         #################################################################################
         # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
+        #x=self.Vgg.feature(x)
+        #x=torch.flatten(x,1)
+        #out=slef.Vgg.classifier(x)
+        
+        
+
+
+
 
         
 
