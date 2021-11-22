@@ -59,19 +59,20 @@ data_aug_transforms = []
 #geometric transformations like: translation, rotation, scaling,clipping, random cropping 
 #color transformations like greyscaling,color-jittering
 
-data_aug_transforms=[
-    #transforms.RandomAffine(degrees=0 ,translate=(0.1,0.5)),
-    #transforms.RandomRotation(degrees=(-45,45)),
-    #transforms.RandomAffine(degrees=0,scale=(0.5, 0.75)),
-    #transforms.RandomHorizontalFlip(p=0.5),
-    #transforms.RandomCrop(size=(32,32))
+# data_aug_transforms=[
+#     #transforms.RandomAffine(degrees=0 ,translate=(0.1,0.5)),
+#     #transforms.RandomRotation(degrees=(-45,45)),
+#     #transforms.RandomAffine(degrees=0,scale=(0.5, 0.75)),
+#     #transforms.RandomHorizontalFlip(p=0.5),
+#     #transforms.RandomCrop(size=(32,32))
 
-    #transforms.RandomGrayscale(p=0.05)
-    #transforms.ColorJitter(brightness=0, contrast=0, saturation=0, hue=0.5)
-    ]
+#     #transforms.RandomGrayscale(p=0.05)
+#     #transforms.ColorJitter(brightness=0, contrast=0, saturation=0, hue=0.5)
+#     ]
 
 # dropout values
-#dropout=0.1
+dropout=0.3
+train_acc_curve = []
 
 
 
@@ -142,35 +143,35 @@ class ConvNet(nn.Module):
             #nn.BatchNorm2d(hidden_layers[0], eps=1e-05, momentum=0.1,affine=True, track_running_stats=True),
             nn.MaxPool2d(kernel_size=2, stride=2), 
             nn.ReLU(),
-            #nn.Dropout(dropout),
+            nn.Dropout(dropout),
                    
        # Adding the second  block
             nn.Conv2d(hidden_layers[0], hidden_layers[1], kernel_size=3, stride=1, padding=1),
            #nn.BatchNorm2d(hidden_layers[1], eps=1e-05, momentum=0.1,affine=True, track_running_stats=True),
             nn.MaxPool2d(kernel_size=2, stride=2),
             nn.ReLU(),
-            #nn.Dropout(dropout),
+            nn.Dropout(dropout),
            
       # Adding the third  block
             nn.Conv2d(hidden_layers[1], hidden_layers[2], kernel_size=3, stride=1, padding=1),
            # nn.BatchNorm2d(hidden_layers[2], eps=1e-05, momentum=0.1,affine=True, track_running_stats=True),
             nn.MaxPool2d(kernel_size=2, stride=2),
             nn.ReLU(),
-            #nn.Dropout(dropout),
+            nn.Dropout(dropout),
             
       # Adding the fourth  block
             nn.Conv2d(hidden_layers[2], hidden_layers[3], kernel_size=3, stride=1, padding=1),
             #nn.BatchNorm2d(hidden_layers[3], eps=1e-05, momentum=0.1,affine=True, track_running_stats=True),
             nn.MaxPool2d(kernel_size=2, stride=2),
             nn.ReLU(),
-            #nn.Dropout(dropout),
+            nn.Dropout(dropout),
             
       # Adding the fifth  block
             nn.Conv2d(hidden_layers[3], hidden_layers[4], kernel_size=3, stride=1, padding=1),
             #nn.BatchNorm2d(hidden_layers[4], eps=1e-05, momentum=0.1,affine=True, track_running_stats=True),
             nn.MaxPool2d(kernel_size=2, stride=2),
             nn.ReLU(),
-            #nn.Dropout(dropout)
+            nn.Dropout(dropout)
             )
 
       # Fully connected layer
@@ -303,6 +304,8 @@ accuracy_val = []
 best_model = type(model)(input_size, hidden_size, num_classes, norm_layer=norm_layer) # get a new instance
 #best_model = ConvNet(input_size, hidden_size, num_classes, norm_layer=norm_layer)
 for epoch in range(num_epochs):
+    correct = 0
+    total = 0
 
     model.train()
 
@@ -321,6 +324,14 @@ for epoch in range(num_epochs):
         loss.backward()
         optimizer.step()
 
+        ###
+        
+        _, predicted = torch.max(outputs.data, 1)
+        total += labels.size(0)
+        correct += (predicted == labels).sum().item()
+
+        ###
+
         loss_iter += loss.item()
         
         if (i+1) % 100 == 0:
@@ -328,13 +339,22 @@ for epoch in range(num_epochs):
                    .format(epoch+1, num_epochs, i+1, total_step, loss.item()))
             
     loss_train.append(loss_iter/(len(train_loader)*batch_size))
+    
+    ###q3
+    current_train_acc = 100 * correct / total
+    train_acc_curve.append(current_train_acc)
+    print('Training accuracy is: {} %'.format(current_train_acc))
+    ###
+
 
     
     # Code to update the lr
     lr *= learning_rate_decay
     update_lr(optimizer, lr)
     
-        
+    
+    
+     
     model.eval()
     with torch.no_grad():
         correct = 0
@@ -358,6 +378,8 @@ for epoch in range(num_epochs):
         accuracy = 100 * correct / total
         accuracy_val.append(accuracy)
         print('Validation accuracy is: {} %'.format(accuracy))
+        
+
         #################################################################################
         # TODO: Q2.b Implement the early stopping mechanism to save the model which has #
         # the model with the best validation accuracy so-far (use best_model).          #
@@ -379,14 +401,21 @@ model.eval()
 
 plt.figure(2)
 plt.plot(loss_train, 'r', label='Train loss')
-plt.plot(loss_val, 'g', label='Val loss')
+plt.plot(loss_val, 'g', label='Validation loss')
 plt.legend()
 plt.show()
 
+
+## plot accuracy of dropout
+
 plt.figure(3)
-plt.plot(accuracy_val, 'r', label='Val accuracy')
+plt.plot(accuracy_val, 'g', label='Validation accuracy')
+plt.plot(train_acc_curve, 'r', label='Train accuracy')
+plt.xlabel("Number of Epochs")
+plt.ylabel("Accuracy")
 plt.legend()
 plt.show()
+
 
 
 
@@ -426,5 +455,6 @@ VisualizeFilter(model)
 
 # Save the model checkpoint
 #torch.save(model.state_dict(), 'model.ckpt')
+
 
 
