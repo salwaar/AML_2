@@ -40,9 +40,9 @@ num_training= 49000
 num_validation =1000
 
 
-fine_tune = False
+fine_tune = True 
 pretrained=True
-
+train_acc_curve = []
 
 
 #-------------------------------------------------
@@ -127,7 +127,7 @@ class VggModel(nn.Module):
            nn.BatchNorm1d(256),
            nn.Linear( 256 , num_classes)
           )
-        #set_parameter_requires_grad(self.Vgg.features,fine_tune)
+        set_parameter_requires_grad(self.Vgg.features,fine_tune)
 
         
        
@@ -205,6 +205,8 @@ best_accuracy = None
 accuracy_val = []
 best_model = type(model)(num_classes, fine_tune, pretrained) # get a new instance
 for epoch in range(num_epochs):
+    correct=0
+    total=0
 
     model.train()
 
@@ -223,6 +225,14 @@ for epoch in range(num_epochs):
         loss.backward()
         optimizer.step()
 
+        ##
+        
+        _,predicted = torch.max(outputs.data, 1)
+        total += labels.size(0)
+        correct += (predicted == labels).sum().item()
+
+        ##
+
         loss_iter += loss.item()
 
         if (i+1) % 100 == 0:
@@ -230,6 +240,12 @@ for epoch in range(num_epochs):
                    .format(epoch+1, num_epochs, i+1, total_step, loss.item()))
 
     loss_train.append(loss_iter/(len(train_loader)*batch_size))
+
+      ###
+    _train_acc = 100 * correct / total
+    train_acc_curve.append(_train_acc)
+    print('Training accuracy is: {} %'.format(_train_acc))
+    ###
 
 
     # Code to update the lr
@@ -286,7 +302,10 @@ plt.legend()
 plt.show()
 
 plt.figure(3)
-plt.plot(accuracy_val, 'r', label='Val accuracy')
+plt.plot(accuracy_val, 'g', label='Val accuracy')
+plt.plot(train_acc_curve, 'r', label='Train accuracy')
+plt.xlabel("Number of Epochs")
+plt.ylabel("Accuracy")
 plt.legend()
 plt.show()
 
