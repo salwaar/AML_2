@@ -34,7 +34,7 @@ print('Using device: %s'%device)
 input_size = 3
 num_classes = 10
 hidden_size = [128, 512, 512, 512, 512]
-num_epochs = 50
+num_epochs = 20
 batch_size = 200
 learning_rate = 2e-3
 learning_rate_decay = 0.95
@@ -60,14 +60,14 @@ data_aug_transforms = []
 #color transformations like greyscaling,color-jittering
 
 # data_aug_transforms=[
-#     #transforms.RandomAffine(degrees=0 ,translate=(0.1,0.5)),
-#     #transforms.RandomRotation(degrees=(-45,45)),
-#     #transforms.RandomAffine(degrees=0,scale=(0.5, 0.75)),
-#     #transforms.RandomHorizontalFlip(p=0.5),
-#     #transforms.RandomCrop(size=(32,32))
+#     transforms.RandomAffine(degrees=0 ,translate=(0.1,0.5)),
+#     transforms.RandomRotation(degrees=(-45,45)),
+#     transforms.RandomAffine(degrees=0,scale=(0.5, 0.75)),
+#     transforms.RandomHorizontalFlip(p=0.5),
+#     transforms.RandomCrop(size=(32,32))
 
-#     #transforms.RandomGrayscale(p=0.05)
-#     #transforms.ColorJitter(brightness=0, contrast=0, saturation=0, hue=0.5)
+#     transforms.RandomGrayscale(p=0.05)
+#     transforms.ColorJitter(brightness=0, contrast=0, saturation=0, hue=0.5)
 #     ]
 
 # dropout values
@@ -140,33 +140,38 @@ class ConvNet(nn.Module):
 
         self.cnn_layers = nn.Sequential(
             nn.Conv2d(input_size, hidden_layers[0], kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(hidden_layers[0], eps=1e-05, momentum=0.1,affine=True, track_running_stats=True),
+            #nn.BatchNorm2d(hidden_layers[0], eps=1e-05, momentum=0.1,affine=True, track_running_stats=True),
             nn.MaxPool2d(kernel_size=2, stride=2), 
             nn.ReLU(),
+            nn.Dropout(dropout),
                    
        # Adding the second  block
             nn.Conv2d(hidden_layers[0], hidden_layers[1], kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(hidden_layers[1], eps=1e-05, momentum=0.1,affine=True, track_running_stats=True),
+           #nn.BatchNorm2d(hidden_layers[1], eps=1e-05, momentum=0.1,affine=True, track_running_stats=True),
             nn.MaxPool2d(kernel_size=2, stride=2),
             nn.ReLU(),
+            nn.Dropout(dropout),
            
       # Adding the third  block
             nn.Conv2d(hidden_layers[1], hidden_layers[2], kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(hidden_layers[2], eps=1e-05, momentum=0.1,affine=True, track_running_stats=True),
+           # nn.BatchNorm2d(hidden_layers[2], eps=1e-05, momentum=0.1,affine=True, track_running_stats=True),
             nn.MaxPool2d(kernel_size=2, stride=2),
             nn.ReLU(),
+            nn.Dropout(dropout),
             
       # Adding the fourth  block
             nn.Conv2d(hidden_layers[2], hidden_layers[3], kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(hidden_layers[3], eps=1e-05, momentum=0.1,affine=True, track_running_stats=True),
+            #nn.BatchNorm2d(hidden_layers[3], eps=1e-05, momentum=0.1,affine=True, track_running_stats=True),
             nn.MaxPool2d(kernel_size=2, stride=2),
             nn.ReLU(),
+            nn.Dropout(dropout),
             
       # Adding the fifth  block
             nn.Conv2d(hidden_layers[3], hidden_layers[4], kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(hidden_layers[4], eps=1e-05, momentum=0.1,affine=True, track_running_stats=True),
+            #nn.BatchNorm2d(hidden_layers[4], eps=1e-05, momentum=0.1,affine=True, track_running_stats=True),
             nn.MaxPool2d(kernel_size=2, stride=2),
             nn.ReLU(),
+            nn.Dropout(dropout)
             )
 
       # Fully connected layer
@@ -213,7 +218,7 @@ def PrintModelSize(model, disp=True):
         print("\nTotal number of parameters: ", model_size)
         print("\n")
 
-    return model_size
+    #return model_size
 
 
 
@@ -250,9 +255,7 @@ def VisualizeFilter(model):
     plt.imshow(filter_map)
     plt.axis('off')
     plt.show()
-    plt.imshow(filter_map)
-    plt.axis('off')
-    plt.show()
+
 
     #pass
 
@@ -336,9 +339,9 @@ for epoch in range(num_epochs):
     loss_train.append(loss_iter/(len(train_loader)*batch_size))
     
     ###q3
-    current_train_acc = 100 * correct / total
-    train_acc_curve.append(current_train_acc)
-    print('Training accuracy is: {} %'.format(current_train_acc))
+    _train_acc = 100 * correct / total
+    train_acc_curve.append(_train_acc)
+    print('Training accuracy is: {} %'.format(_train_acc))
     ###
 
 
@@ -382,8 +385,7 @@ for epoch in range(num_epochs):
 
         # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-        if accuracy >= max(accuracy_val):
-            best_model = model
+        
 
         # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
@@ -421,7 +423,7 @@ plt.show()
 #################################################################################
 # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-model = best_model
+
 
 # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
