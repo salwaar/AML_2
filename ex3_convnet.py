@@ -34,7 +34,7 @@ print('Using device: %s'%device)
 input_size = 3
 num_classes = 10
 hidden_size = [128, 512, 512, 512, 512]
-num_epochs = 20
+num_epochs = 50
 batch_size = 200
 learning_rate = 2e-3
 learning_rate_decay = 0.95
@@ -140,38 +140,33 @@ class ConvNet(nn.Module):
 
         self.cnn_layers = nn.Sequential(
             nn.Conv2d(input_size, hidden_layers[0], kernel_size=3, stride=1, padding=1),
-            #nn.BatchNorm2d(hidden_layers[0], eps=1e-05, momentum=0.1,affine=True, track_running_stats=True),
+            nn.BatchNorm2d(hidden_layers[0], eps=1e-05, momentum=0.1,affine=True, track_running_stats=True),
             nn.MaxPool2d(kernel_size=2, stride=2), 
             nn.ReLU(),
-            nn.Dropout(dropout),
                    
        # Adding the second  block
             nn.Conv2d(hidden_layers[0], hidden_layers[1], kernel_size=3, stride=1, padding=1),
-           #nn.BatchNorm2d(hidden_layers[1], eps=1e-05, momentum=0.1,affine=True, track_running_stats=True),
+            nn.BatchNorm2d(hidden_layers[1], eps=1e-05, momentum=0.1,affine=True, track_running_stats=True),
             nn.MaxPool2d(kernel_size=2, stride=2),
             nn.ReLU(),
-            nn.Dropout(dropout),
            
       # Adding the third  block
             nn.Conv2d(hidden_layers[1], hidden_layers[2], kernel_size=3, stride=1, padding=1),
-           # nn.BatchNorm2d(hidden_layers[2], eps=1e-05, momentum=0.1,affine=True, track_running_stats=True),
+            nn.BatchNorm2d(hidden_layers[2], eps=1e-05, momentum=0.1,affine=True, track_running_stats=True),
             nn.MaxPool2d(kernel_size=2, stride=2),
             nn.ReLU(),
-            nn.Dropout(dropout),
             
       # Adding the fourth  block
             nn.Conv2d(hidden_layers[2], hidden_layers[3], kernel_size=3, stride=1, padding=1),
-            #nn.BatchNorm2d(hidden_layers[3], eps=1e-05, momentum=0.1,affine=True, track_running_stats=True),
+            nn.BatchNorm2d(hidden_layers[3], eps=1e-05, momentum=0.1,affine=True, track_running_stats=True),
             nn.MaxPool2d(kernel_size=2, stride=2),
             nn.ReLU(),
-            nn.Dropout(dropout),
             
       # Adding the fifth  block
             nn.Conv2d(hidden_layers[3], hidden_layers[4], kernel_size=3, stride=1, padding=1),
-            #nn.BatchNorm2d(hidden_layers[4], eps=1e-05, momentum=0.1,affine=True, track_running_stats=True),
+            nn.BatchNorm2d(hidden_layers[4], eps=1e-05, momentum=0.1,affine=True, track_running_stats=True),
             nn.MaxPool2d(kernel_size=2, stride=2),
             nn.ReLU(),
-            nn.Dropout(dropout)
             )
 
       # Fully connected layer
@@ -387,7 +382,8 @@ for epoch in range(num_epochs):
 
         # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-        
+        if accuracy >= max(accuracy_val):
+            best_model = model
 
         # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
@@ -425,7 +421,7 @@ plt.show()
 #################################################################################
 # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-
+model = best_model
 
 # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
