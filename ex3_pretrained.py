@@ -1,5 +1,9 @@
 import torch
 import torch.nn as nn
+#
+from torch.nn import Linear, ReLU, CrossEntropyLoss, Sequential, Conv2d, MaxPool2d, Module, Softmax, BatchNorm2d, Dropout
+
+#
 import torchvision
 from torchvision import models
 import torchvision.transforms as transforms
@@ -87,11 +91,13 @@ test_loader = torch.utils.data.DataLoader(dataset=test_dataset,
                                           shuffle=False)
 
 
+#
+
 def set_parameter_requires_grad(model, feature_extracting):
     if feature_extracting:
         for param in model.parameters():
             param.requires_grad = False
-            
+#           
             
 
 class VggModel(nn.Module):
@@ -108,18 +114,21 @@ class VggModel(nn.Module):
         
        # https://pytorch.org/vision/main/_modules/torchvision/models/vgg.html#vgg11_bn
        #Add two fully connected layers on top, with BatchNorm and ReLU layers between them
-       #initial try for Q4 , not sure yet how to do it 
         
-        #self.Vgg=models.vgg11_bn(pretrained=pretrained)
-        #del self.Vgg.avgpool
-        #del slef.Vgg.classifier
+        self.Vgg=models.vgg11_bn(pretrained=pretrained)
+        del self.Vgg.avgpool
+        del self.Vgg.classifier
         
-        #self.Vgg=nn.Sequential(
-        #    nn.linear(),
-        #    nn.ReLU(),
-        #    nn.BatchNorm2d(),
-        #    nn.linear(  , num_classesum)
-         #   )
+        self.Vgg.classifier=nn.Sequential(
+           nn.Linear(512,256),
+           nn.ReLU(),
+           nn.BatchNorm1d(256),
+           nn.Linear( 256 , num_classes)
+          )
+        #set_parameter_requires_grad(self.Vgg.features,fine_tune)
+
+        
+       
 
         
 
@@ -133,9 +142,9 @@ class VggModel(nn.Module):
         # TODO: Implement the forward pass computations                                 #
         #################################################################################
         # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
-        #x=self.Vgg.feature(x)
-        #x=torch.flatten(x,1)
-        #out=slef.Vgg.classifier(x)
+        x_1=self.Vgg.features(x)
+        x_2=torch.flatten(x_1,1)
+        out=self.Vgg.classifier(x_2)
         
         
 
@@ -164,8 +173,12 @@ print("Params to learn:")
 if fine_tune:
     params_to_update = []
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
-    
-    
+    for name,param in model.Vgg.classifier.named_parameters():
+        if param.requires_grad == True:
+            params_to_update.append(param)
+            print("\t",name)
+
+#https://pytorch.org/tutorials/beginner/finetuning_torchvision_models_tutorial.html
     
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 else:
