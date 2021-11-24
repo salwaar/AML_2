@@ -38,7 +38,9 @@ learning_rate_decay = 0.99
 reg=0#0.001
 num_training= 49000
 num_validation =1000
-fine_tune = True
+
+
+fine_tune = False
 pretrained=True
 
 
